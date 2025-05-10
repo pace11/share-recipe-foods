@@ -12,11 +12,13 @@ import jwt from 'jsonwebtoken'
 
 import FormRecipe from '@/containers/form-recipe'
 import CardRecipe from '@/containers/card-recipe'
+import ReplyRecipe from '@/containers/reply-recipe'
 
 export default function Home() {
   const [show, setShow] = useState<boolean | number>(false)
   const [page, setPage] = useState<number>(1)
-  const { data, mutate } = useSWR<ApiResponse<Recipe[]>>(
+  const [openComment, setOpenComment] = useState<string>('')
+  const { data, isLoading, mutate } = useSWR<ApiResponse<Recipe[]>>(
     [`${process.env.NEXT_PUBLIC_URL_API}/recipes?page=${page}`],
     ([url]) => fetcher(url),
   )
@@ -39,15 +41,24 @@ export default function Home() {
         </div>
         <CardRecipe
           data={data}
+          loading={isLoading}
           onFinish={() => mutate()}
           onPrev={() => handlePagination(page - 1)}
           onNext={() => handlePagination(page + 1)}
+          onComment={(value) => setOpenComment(value)}
         />
       </div>
       <FormRecipe
         open={show}
         onOpen={() => setShow((prevState) => !prevState)}
         onFinish={() => mutate()}
+      />
+      <ReplyRecipe
+        open={openComment}
+        onOpen={() => {
+          setOpenComment('')
+          handlePagination(page)
+        }}
       />
     </>
   )

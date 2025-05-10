@@ -5,6 +5,12 @@ export type ApiResponse<T> = {
   meta?: PaginationMeta
 }
 
+export type MutateResponse = {
+  status: string
+  message?: string
+  data: unknown | null
+}
+
 export type PaginationMeta = {
   page: number
   limit: number

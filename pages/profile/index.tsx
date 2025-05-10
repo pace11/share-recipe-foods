@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/button'
 import { User2, LogOut } from 'lucide-react'
 import { ApiResponse } from '@/types/api'
 import { User } from '@/types/user'
-import { Recipe } from '@/types/recipe'
+import { Recipe, RecipeSave } from '@/types/recipe'
 import CardRecipe from '@/containers/card-recipe'
+import CardRecipeSave from '@/containers/card-recipe-save'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/router'
@@ -25,12 +26,25 @@ export default function Profile() {
   const logout = authStore((s) => s.logout)
   const router = useRouter()
   const [page, setPage] = useState<number>(1)
+  const [pageSaves, setPageSaves] = useState<number>(1)
   const { data: userData } = useSWR<ApiResponse<User>>(
     [`${process.env.NEXT_PUBLIC_URL_API}/user/me`],
     ([url]) => fetcher(url),
   )
-  const { data: recipesData, mutate } = useSWR<ApiResponse<Recipe[]>>(
+  const {
+    data: recipesData,
+    isLoading: isLoadingRecipe,
+    mutate,
+  } = useSWR<ApiResponse<Recipe[]>>(
     [`${process.env.NEXT_PUBLIC_URL_API}/recipes?type=me&page=${page}`],
+    ([url]) => fetcher(url),
+  )
+  const {
+    data: recipeSaveData,
+    isLoading: isLoadingRecipeSave,
+    mutate: mutateRecipeSave,
+  } = useSWR<ApiResponse<RecipeSave[]>>(
+    [`${process.env.NEXT_PUBLIC_URL_API}/recipe/saves?page=${pageSaves}`],
     ([url]) => fetcher(url),
   )
   const user = userData?.data
@@ -41,6 +55,14 @@ export default function Profile() {
     )
     mutate(newData, false)
     setPage(value)
+  }
+
+  const handlePaginationRecipeSaves = async (value: number) => {
+    const newData = await fetcher(
+      `${process.env.NEXT_PUBLIC_URL_API}/recipe/saves?page=${value}`,
+    )
+    mutateRecipeSave(newData, false)
+    setPageSaves(value)
   }
 
   const handleLogout = () => {
@@ -82,13 +104,24 @@ export default function Profile() {
           <div className="grid grid-cols-1 gap-4">
             <CardRecipe
               data={recipesData}
+              loading={isLoadingRecipe}
               onFinish={() => mutate()}
               onPrev={() => handlePagination(page - 1)}
               onNext={() => handlePagination(page + 1)}
             />
           </div>
         </TabsContent>
-        <TabsContent value="saved">Saved</TabsContent>
+        <TabsContent value="saved">
+          <div className="grid grid-cols-1 gap-4">
+            <CardRecipeSave
+              data={recipeSaveData}
+              loading={isLoadingRecipeSave}
+              onFinish={() => mutateRecipeSave()}
+              onPrev={() => handlePaginationRecipeSaves(pageSaves - 1)}
+              onNext={() => handlePaginationRecipeSaves(pageSaves + 1)}
+            />
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   )

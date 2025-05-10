@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// import { dateDistanceToNow, fetcher } from '@/helpers'
 import useSWR from 'swr'
 import { fetcher, dateDistanceToNow } from '@/helpers'
 import {
@@ -10,12 +9,13 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ReplyRecipe from '@/containers/reply-recipe'
-import { ApiResponse } from '@/types/api'
+import { ApiResponse, MutateResponse } from '@/types/api'
 import type { Recipe } from '@/types/recipe'
-import { MessageCircle, Heart } from 'lucide-react'
+import { MessageCircle, Heart, Bookmark } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import Cookies from 'js-cookie'
+import { mutateApi } from '@/lib/api'
+import { toast } from 'sonner'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 import { parse } from 'cookie'
 import jwt from 'jsonwebtoken'
@@ -23,35 +23,37 @@ import jwt from 'jsonwebtoken'
 export default function Recipe() {
   const router = useRouter()
   const [openComment, setOpenComment] = useState<string>('')
-  const { data, mutate: mutateRecipe } = useSWR<ApiResponse<Recipe>>(
+  const { data, mutate } = useSWR<ApiResponse<Recipe>>(
     [`${process.env.NEXT_PUBLIC_URL_API}/recipe/${router.query.id}`],
     ([url]) => fetcher(url),
   )
 
-  const handleLikeRecipe = async ({
-    like,
-    id,
-  }: {
-    like: boolean
-    id: string
-  }) => {
+  const handleOnclick = async (
+    type: 'liked' | 'saved',
+    id: string,
+    like: boolean | null,
+  ) => {
+    const url = {
+      liked: `${process.env.NEXT_PUBLIC_URL_API}/${
+        like ? 'unlike' : 'like'
+      }/recipe/${id}`,
+      saved: `${process.env.NEXT_PUBLIC_URL_API}/recipe/save/${id}`,
+    }
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_URL_API}/${
-          like ? 'unlike' : 'like'
-        }/recipe/${id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Cookies.get('user_token')}`,
-          },
-        },
-      )
-      if (!!response.ok) {
-        mutateRecipe()
-      }
-    } catch (error) {}
+      const response = await mutateApi<MutateResponse>(`${url[type]}`, 'POST')
+      toast('Info', {
+        description: response?.message || '',
+        position: 'top-center',
+      })
+      mutate()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
+    }
   }
 
   if (!data?.data) return null
@@ -72,10 +74,7 @@ export default function Recipe() {
                 size="sm"
                 variant="ghost"
                 onClick={() =>
-                  handleLikeRecipe({
-                    like: data.data.is_liked_by_me,
-                    id: data.data.id,
-                  })
+                  handleOnclick('liked', data.data.id, data.data.is_liked_by_me)
                 }
               >
                 <Heart
@@ -91,6 +90,16 @@ export default function Recipe() {
               >
                 <MessageCircle /> {`${data.data.comments_count || ''}`}
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleOnclick('saved', data.data.id, null)}
+              >
+                <Bookmark
+                  stroke={data.data.is_saved_by_me ? 'black' : 'currentColor'}
+                  fill={data.data.is_saved_by_me ? 'black' : 'none'}
+                />
+              </Button>
             </CardDescription>
           </CardHeader>
         </Card>
@@ -98,7 +107,7 @@ export default function Recipe() {
           open={openComment}
           onOpen={() => {
             setOpenComment('')
-            mutateRecipe()
+            mutate()
           }}
         />
       </div>

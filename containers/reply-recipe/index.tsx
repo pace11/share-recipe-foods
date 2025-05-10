@@ -11,7 +11,6 @@ import {
   Form,
   FormField,
   FormItem,
-  FormLabel,
   FormControl,
   FormMessage,
 } from '@/components/ui/form'
@@ -20,14 +19,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { schemaCommentRecipe } from '@/types/form'
 import useFormAction from '@/hooks/useFormAction'
-import { toast } from 'sonner'
-import { ApiResponse } from '@/types/api'
+import { ApiResponse, MutateResponse } from '@/types/api'
 import { Comment } from '@/types/comment'
 import { fetcher } from '@/helpers'
-import Cookies from 'js-cookie'
 import { dateDistanceToNow } from '@/helpers'
 import { z } from 'zod'
 import { useState } from 'react'
+import { mutateApi } from '@/lib/api'
+import { toast } from 'sonner'
 
 type ReplyRecipeProps = {
   open: string
@@ -37,7 +36,7 @@ type ReplyRecipeProps = {
 export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
   const [loading, setLoading] = useState<boolean>(false)
   const { data: comments, mutate } = useSWR<ApiResponse<Comment[]>>(
-    [`${process.env.NEXT_PUBLIC_URL_API}/comments/recipe/${open}`],
+    [open ? `${process.env.NEXT_PUBLIC_URL_API}/comments/recipe/${open}` : ''],
     ([url]) => fetcher(url),
   )
   const { form } = useFormAction({
@@ -50,28 +49,24 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
   const onSubmit = async (values: z.infer<typeof schemaCommentRecipe>) => {
     setLoading(true)
     try {
-      const response = await fetch(
+      const response = await mutateApi<MutateResponse>(
         `${process.env.NEXT_PUBLIC_URL_API}/comment/recipe/${open}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Cookies.get('user_token')}`,
-          },
-          body: JSON.stringify(values),
-        },
+        'POST',
+        values,
       )
-      const data = await response.json()
-
-      if (!!response.ok) {
-        mutate()
-        toast('Info', {
-          description: data?.message || '',
-          position: 'top-center',
-        })
-        form.reset()
-      }
+      toast('Info', {
+        description: response?.message || '',
+        position: 'top-center',
+      })
+      mutate()
+      form.reset()
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
     } finally {
       setLoading(false)
     }
@@ -119,7 +114,7 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
                 </CardContent>
               </Card>
             </div>
-            {comments?.data.map((comment) => (
+            {comments?.data?.map((comment) => (
               <Card key={comment.id}>
                 <CardHeader>
                   <CardTitle>
@@ -132,7 +127,7 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
                   <CardDescription>{comment.content}</CardDescription>
                 </CardHeader>
               </Card>
-            ))}
+            )) || null}
           </div>
         </div>
       </DrawerContent>
