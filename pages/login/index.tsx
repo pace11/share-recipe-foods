@@ -23,11 +23,12 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useState } from 'react'
-import Cookies from 'js-cookie'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 import { parse } from 'cookie'
 import jwt from 'jsonwebtoken'
 import { authStore } from '@/store/authStore'
+import { mutateApi } from '@/lib/api'
+import { LoginResponse, MutateResponse } from '@/types/api'
 
 export default function Login() {
   const setIsLoggedIn = authStore((s) => s.setIsLoggedIn)
@@ -42,28 +43,25 @@ export default function Login() {
   })
 
   const onSubmit = async (values: z.infer<typeof schemaLogin>) => {
+    setLoading(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/auth/login`, {
-        method: 'POST',
-        body: JSON.stringify(values),
-      })
-      const data = await res.json()
-
-      if (!!res.ok) {
-        setIsLoggedIn(data?.data?.expires, data?.data?.token)
-        toast('Info', {
-          description: 'Login success',
-          position: 'top-center',
-        })
-        router.reload()
-        return
-      }
-
-      return toast('Error', {
-        description: data?.message || '',
+      const response = await mutateApi<MutateResponse<LoginResponse>>(
+        `${process.env.NEXT_PUBLIC_URL_API}/auth/login`,
+        'POST',
+        values,
+      )
+      setIsLoggedIn(response.data?.expires || '', response.data?.token || '')
+      router.reload()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
         position: 'top-center',
       })
-    } catch (error) {}
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -113,7 +111,7 @@ export default function Login() {
                 </Link>
               </p>
               <Button className="w-full" type="submit">
-                Register
+                {loading ? 'Loading ...' : 'Login'}
               </Button>
             </div>
           </form>

@@ -1,3 +1,5 @@
+import { User } from './user'
+
 export type ApiResponse<T> = {
   status: string
   message?: string
@@ -5,10 +7,10 @@ export type ApiResponse<T> = {
   meta?: PaginationMeta
 }
 
-export type MutateResponse = {
+export type MutateResponse<T> = {
   status: string
   message?: string
-  data: unknown | null
+  data?: T
 }
 
 export type PaginationMeta = {
@@ -16,4 +18,10 @@ export type PaginationMeta = {
   limit: number
   total: number
   total_pages: number
+}
+
+export type LoginResponse = {
+  expires: string
+  token: string
+  user: User
 }

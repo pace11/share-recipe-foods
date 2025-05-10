@@ -46,7 +46,10 @@ export default function CardRecipe({
       saved: `${process.env.NEXT_PUBLIC_URL_API}/recipe/save/${id}`,
     }
     try {
-      const response = await mutateApi<MutateResponse>(`${url[type]}`, 'POST')
+      const response = await mutateApi<MutateResponse<null>>(
+        `${url[type]}`,
+        'POST',
+      )
       toast('Info', {
         description: response?.message || '',
         position: 'top-center',

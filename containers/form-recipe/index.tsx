@@ -13,10 +13,11 @@ import useFormAction from '@/hooks/useFormAction'
 import { Input } from '@/components/ui/input'
 import dynamic from 'next/dynamic'
 import { schemaRecipe } from '@/types/form'
-import { useRef } from 'react'
-import Cookies from 'js-cookie'
+import { mutateApi } from '@/lib/api'
+import { useRef, useState } from 'react'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { MutateResponse } from '@/types/api'
 
 const Quill = dynamic(() => import('react-quill'), { ssr: false })
 
@@ -35,6 +36,7 @@ export default function FormRecipe({
   onOpen,
   onFinish,
 }: FormRecipeProps) {
+  const [loading, setLoading] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
   const { form } = useFormAction({
     schema: schemaRecipe,
@@ -50,29 +52,29 @@ export default function FormRecipe({
   }
 
   const onSubmit = async (values: z.infer<typeof schemaRecipe>) => {
+    setLoading(true)
     try {
-      const response = await fetch(
+      const response = await mutateApi<MutateResponse<null>>(
         `${process.env.NEXT_PUBLIC_URL_API}/recipe`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Cookies.get('user_token')}`,
-          },
-          body: JSON.stringify(values),
-        },
+        'POST',
+        values,
       )
-      const data = await response.json()
-
-      if (!!response.ok) {
-        onFinish()
-        toast('Info', {
-          description: data?.message || '',
-          position: 'top-center',
-        })
-        handleClose()
-      }
-    } catch (error) {}
+      onFinish()
+      toast('Info', {
+        description: response.message || '',
+        position: 'top-center',
+      })
+      handleClose()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClose = () => {
@@ -89,8 +91,12 @@ export default function FormRecipe({
             <Button size="sm" variant="secondary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button size="sm" onClick={() => onSubmitClick()}>
-              Save
+            <Button
+              size="sm"
+              onClick={() => onSubmitClick()}
+              disabled={loading}
+            >
+              {loading ? 'Loading ...' : 'Save'}
             </Button>
           </div>
           <Form {...form}>

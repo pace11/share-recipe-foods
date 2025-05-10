@@ -49,7 +49,7 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
   const onSubmit = async (values: z.infer<typeof schemaCommentRecipe>) => {
     setLoading(true)
     try {
-      const response = await mutateApi<MutateResponse>(
+      const response = await mutateApi<MutateResponse<null>>(
         `${process.env.NEXT_PUBLIC_URL_API}/comment/recipe/${open}`,
         'POST',
         values,

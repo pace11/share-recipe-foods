@@ -23,9 +23,11 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useState } from 'react'
+import { mutateApi } from '@/lib/api'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 import { parse } from 'cookie'
 import jwt from 'jsonwebtoken'
+import { MutateResponse } from '@/types/api'
 
 export default function Register() {
   const [loading, setLoading] = useState<boolean>(false)
@@ -43,26 +45,24 @@ export default function Register() {
   const onSubmit = async (values: z.infer<typeof schemaRegister>) => {
     setLoading(true)
     try {
-      const response = await (
-        await fetch(`${process.env.NEXT_PUBLIC_URL_API}/auth/register`, {
-          method: 'POST',
-          body: JSON.stringify(values),
-        })
-      ).json()
+      const response = await mutateApi<MutateResponse<null>>(
+        `${process.env.NEXT_PUBLIC_URL_API}/auth/register`,
+        'POST',
+        values,
+      )
 
-      if (!response?.errors?.message) {
-        router.push('/login')
-        return toast('Success', {
-          description: response.message,
-          position: 'top-center',
-        })
-      }
-
-      return toast('Error', {
-        description: response?.errors?.message || 'Error Message',
+      toast('Success', {
+        description: response.message,
         position: 'top-center',
       })
+      router.push('/login')
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
     } finally {
       setLoading(false)
     }
