@@ -18,7 +18,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd pace-app/share-recipe-foods/
-            echo "${{ secrets.ENV_PROD }}" > .env.prod
+            echo "${{ secrets.ENV_PROD }}" | sudo tee .env.prod > /dev/null
             sudo git pull origin master
             cd ..
             sudo docker compose up -d --build recipe-foods
