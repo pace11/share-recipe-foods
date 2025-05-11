@@ -6,6 +6,7 @@ import {
   CardDescription,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import NoData from '@/components/common/no-data'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ApiResponse, MutateResponse } from '@/types/api'
@@ -30,7 +31,6 @@ export default function CardRecipeSave({
   onPrev,
   onNext,
 }: CardRecipePropsSave) {
-  console.log('data => ', data)
   const recipes = data?.data
 
   const handleOnclick = async (id: string) => {
@@ -71,7 +71,7 @@ export default function CardRecipeSave({
       </>
     )
 
-  if (!recipes) return null
+  if (!recipes) return <NoData />
 
   return (
     <>

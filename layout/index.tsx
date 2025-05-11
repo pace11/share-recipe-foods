@@ -53,6 +53,11 @@ export default function MainLayout({
                   <Link href="/profile">Profile</Link>
                 </MenubarTrigger>
               </MenubarMenu>
+              <MenubarMenu>
+                <MenubarTrigger>
+                  <Link href="/notifications">Notifications</Link>
+                </MenubarTrigger>
+              </MenubarMenu>
             </Menubar>
           )}
         </header>

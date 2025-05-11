@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import NoData from '@/components/common/no-data'
 import Link from 'next/link'
 import { ApiResponse, MutateResponse } from '@/types/api'
 import { Recipe } from '@/types/recipe'
@@ -82,7 +83,7 @@ export default function CardRecipe({
       </>
     )
 
-  if (!recipes) return null
+  if (!recipes) return <NoData />
 
   return (
     <>
