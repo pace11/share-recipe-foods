@@ -1,5 +1,7 @@
 # SHARE RECIPE FOODS 🍽️
 
+<div align="center"><img src="./public/share-recipes-icon.png" width="200" style="text-align:center"/></div>
+
 ## Stack 🕸️
 
 - Next.js (Pages Router) + Typescript ☑️
