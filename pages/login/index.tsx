@@ -29,6 +29,7 @@ import jwt from 'jsonwebtoken'
 import { authStore } from '@/store/authStore'
 import { mutateApi } from '@/lib/api'
 import { LoginResponse, MutateResponse } from '@/types/api'
+import Image from 'next/image'
 
 export default function Login() {
   const setIsLoggedIn = authStore((s) => s.setIsLoggedIn)
@@ -66,6 +67,14 @@ export default function Login() {
 
   return (
     <Card>
+      <div className="flex items-center justify-center">
+        <Image
+          src="https://res.cloudinary.com/dby4ywiss/image/upload/v1747069090/app/share%20recipes/share-recipes_ipgcea.png"
+          alt="share-recipes-foods"
+          width={120}
+          height={120}
+        />
+      </div>
       <CardHeader className="text-center">
         <CardTitle>LOGIN</CardTitle>
         <CardDescription>Form Data</CardDescription>

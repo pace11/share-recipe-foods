@@ -58,7 +58,8 @@ export default function CardNotification({
       </>
     )
 
-  if (!notifications) return <NoData />
+  if (Array.isArray(notifications) && notifications.length === 0)
+    return <NoData />
 
   return (
     <>

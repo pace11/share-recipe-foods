@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import useFormAction from '@/hooks/useFormAction'
 import { schemaRegister } from '@/types/form'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useRouter } from 'next/router'
@@ -70,6 +71,14 @@ export default function Register() {
 
   return (
     <Card>
+      <div className="flex items-center justify-center">
+        <Image
+          src="https://res.cloudinary.com/dby4ywiss/image/upload/v1747069090/app/share%20recipes/share-recipes_ipgcea.png"
+          alt="share-recipes-foods"
+          width={120}
+          height={120}
+        />
+      </div>
       <CardHeader className="text-center">
         <CardTitle>REGISTER</CardTitle>
         <CardDescription>Form Create Data</CardDescription>
