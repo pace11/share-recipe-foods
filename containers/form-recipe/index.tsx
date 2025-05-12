@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Drawer, DrawerTitle, DrawerContent } from '@/components/ui/drawer'
+import {
+  Drawer,
+  DrawerTitle,
+  DrawerContent,
+  DrawerFooter,
+} from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -22,7 +27,7 @@ import { MutateResponse } from '@/types/api'
 const Quill = dynamic(() => import('react-quill'), { ssr: false })
 
 type FormRecipeProps = {
-  open: boolean | number
+  open: boolean | string
   title?: string
   onOpen: () => void
   onFinish: () => void
@@ -52,11 +57,15 @@ export default function FormRecipe({
   }
 
   const onSubmit = async (values: z.infer<typeof schemaRecipe>) => {
+    const isEditing = typeof open === 'string'
+
     setLoading(true)
     try {
       const response = await mutateApi<MutateResponse<null>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/recipe`,
-        'POST',
+        `${process.env.NEXT_PUBLIC_URL_API}/recipe${
+          isEditing ? `/${open}` : ''
+        }`,
+        isEditing ? 'PATCH' : 'POST',
         values,
       )
       onFinish()
@@ -86,19 +95,7 @@ export default function FormRecipe({
     <Drawer open={!!open} onOpenChange={handleClose}>
       <DrawerContent>
         <DrawerTitle className="text-center">{title}</DrawerTitle>
-        <div className="max-h-[90vh] overflow-y-auto container p-4 container relative w-full max-w-sm mx-auto">
-          <div className="flex gap-2 justify-end sticky top-0">
-            <Button size="sm" variant="secondary" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => onSubmitClick()}
-              disabled={loading}
-            >
-              {loading ? 'Loading ...' : 'Save'}
-            </Button>
-          </div>
+        <div className="max-h-[90vh] overflow-y-auto container p-4 container w-full max-w-sm mx-auto">
           <Form {...form}>
             <form
               ref={formRef}
@@ -136,6 +133,20 @@ export default function FormRecipe({
             </form>
           </Form>
         </div>
+        <DrawerFooter>
+          <div className="flex gap-2 justify-end p-4 container w-full max-w-sm mx-auto">
+            <Button size="sm" variant="secondary" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onSubmitClick()}
+              disabled={loading}
+            >
+              {loading ? 'Loading ...' : 'Save'}
+            </Button>
+          </div>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   )

@@ -15,9 +15,13 @@ import CardRecipe from '@/containers/card-recipe'
 import ReplyRecipe from '@/containers/reply-recipe'
 
 export default function Home() {
-  const [show, setShow] = useState<boolean | number>(false)
+  const [show, setShow] = useState<boolean | string>(false)
   const [page, setPage] = useState<number>(1)
   const [openComment, setOpenComment] = useState<string>('')
+  const [valueEdit, setValueEdit] = useState({
+    title: '',
+    content: '',
+  })
   const { data, isLoading, mutate } = useSWR<ApiResponse<Recipe[]>>(
     [`${process.env.NEXT_PUBLIC_URL_API}/recipes?page=${page}`],
     ([url]) => fetcher(url),
@@ -36,7 +40,7 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-4">
         <div className="flex justify-end sticky top-15">
           <Button size="sm" onClick={() => setShow(true)}>
-            <MessageSquarePlus />
+            <MessageSquarePlus /> Create Recipe
           </Button>
         </div>
         <CardRecipe
@@ -46,12 +50,23 @@ export default function Home() {
           onPrev={() => handlePagination(page - 1)}
           onNext={() => handlePagination(page + 1)}
           onComment={(value) => setOpenComment(value)}
+          onEdit={(id, title, content) => {
+            setShow(id)
+            setValueEdit({
+              title,
+              content,
+            })
+          }}
         />
       </div>
       <FormRecipe
         open={show}
-        onOpen={() => setShow((prevState) => !prevState)}
+        onOpen={() => {
+          setShow((prevState) => !prevState)
+          setValueEdit({ title: '', content: '' })
+        }}
         onFinish={() => mutate()}
+        values={valueEdit}
       />
       <ReplyRecipe
         open={openComment}

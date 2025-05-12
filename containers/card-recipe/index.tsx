@@ -5,6 +5,14 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import NoData from '@/components/common/no-data'
@@ -12,7 +20,13 @@ import Link from 'next/link'
 import { ApiResponse, MutateResponse } from '@/types/api'
 import { Recipe } from '@/types/recipe'
 import { dateDistanceToNow } from '@/helpers'
-import { MessageCircle, Heart, Bookmark } from 'lucide-react'
+import {
+  MessageCircle,
+  Heart,
+  Bookmark,
+  Trash2Icon,
+  Edit3Icon,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { mutateApi } from '@/lib/api'
 
@@ -23,6 +37,7 @@ type CardRecipeProps = {
   onPrev: () => void
   onNext: () => void
   onComment?: (value: string) => void
+  onEdit: (id: string, title: string, content: string) => void
 }
 
 export default function CardRecipe({
@@ -32,6 +47,7 @@ export default function CardRecipe({
   onPrev,
   onNext,
   onComment,
+  onEdit,
 }: CardRecipeProps) {
   const recipes = data?.data
 
@@ -50,6 +66,27 @@ export default function CardRecipe({
       const response = await mutateApi<MutateResponse<null>>(
         `${url[type]}`,
         'POST',
+      )
+      toast('Info', {
+        description: response?.message || '',
+        position: 'top-center',
+      })
+      onFinish()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await mutateApi<MutateResponse<null>>(
+        `${process.env.NEXT_PUBLIC_URL_API}/recipe/${id}`,
+        'DELETE',
       )
       toast('Info', {
         description: response?.message || '',
@@ -90,9 +127,44 @@ export default function CardRecipe({
       {recipes?.map((recipe) => (
         <Card key={recipe.id}>
           <CardHeader>
-            <CardTitle className="hover:underline hover:cursos-pointer">
-              <Link href={`/recipe/${recipe.id}`}>{recipe.title}</Link>
-            </CardTitle>
+            <div className="flex justify-between">
+              <CardTitle className="hover:underline hover:cursos-pointer">
+                <Link href={`/recipe/${recipe.id}`}>{recipe.title}</Link>
+              </CardTitle>
+              <div className="flex gap-2" hidden={!recipe.is_mine}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    onEdit(recipe.id, recipe.title, recipe.content)
+                  }
+                >
+                  <Edit3Icon />
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="destructive">
+                      <Trash2Icon />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogDescription>
+                        Are you sure you want to delete this data ?
+                      </DialogDescription>
+                      <DialogDescription>
+                        <Button
+                          size="sm"
+                          onClick={() => handleDelete(recipe.id)}
+                        >
+                          Yes
+                        </Button>
+                      </DialogDescription>
+                    </DialogHeader>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
             <CardDescription>{`by ${
               recipe.is_mine ? 'Me' : recipe.user.name
             }, ${dateDistanceToNow(recipe.created_at)}`}</CardDescription>
