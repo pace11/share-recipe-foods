@@ -1,17 +1,28 @@
-import CardNotification from '@/containers/card-notification'
-import useSWR from 'swr'
-import { fetcher } from '@/helpers'
-import { ApiResponse } from '@/types/api'
-import { Notification } from '@/types/notification'
+import NotificationContainer from '@/containers/notification-container'
+import { GetServerSideProps, GetServerSidePropsContext } from 'next'
+import { parse } from 'cookie'
+import jwt from 'jsonwebtoken'
 
 export default function Notifications() {
-  const { data, isLoading } = useSWR<ApiResponse<Notification[]>>(
-    [`${process.env.NEXT_PUBLIC_URL_API}/notifications`],
-    ([url]) => fetcher(url),
-  )
-  return (
-    <div className="grid grid-cols-1 gap-4">
-      <CardNotification data={data} loading={isLoading} />
-    </div>
-  )
+  return <NotificationContainer />
+}
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  const cookies = parse(context.req.headers.cookie || '')
+  const token = cookies?.user_token
+    ? jwt.verify(cookies.user_token, process.env.SECRET_KEY!)
+    : false
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  return { props: {} }
 }

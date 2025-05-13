@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import dynamic from 'next/dynamic'
 import {
   Drawer,
   DrawerTitle,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/form'
 import useFormAction from '@/hooks/useFormAction'
 import { Input } from '@/components/ui/input'
-import dynamic from 'next/dynamic'
 import { schemaRecipe } from '@/types/form'
 import { mutateApi } from '@/lib/api'
 import { useRef, useState } from 'react'
@@ -95,7 +95,7 @@ export default function FormRecipe({
     <Drawer open={!!open} onOpenChange={handleClose}>
       <DrawerContent>
         <DrawerTitle className="text-center">{title}</DrawerTitle>
-        <div className="max-h-[90vh] overflow-y-auto container p-4 container w-full max-w-sm mx-auto">
+        <div className="max-h-[90vh] overflow-y-auto container p-4 w-full max-w-sm mx-auto">
           <Form {...form}>
             <form
               ref={formRef}
