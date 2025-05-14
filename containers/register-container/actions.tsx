@@ -24,7 +24,7 @@ export const Actions = () => {
     setLoading(true)
     try {
       const response = await mutateApi<MutateResponse<null>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/auth/register`,
+        `/auth/register`,
         'POST',
         values,
       )

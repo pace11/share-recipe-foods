@@ -36,7 +36,7 @@ export default function CardRecipeSave({
   const handleOnclick = async (id: string) => {
     try {
       const response = await mutateApi<MutateResponse<null>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/recipe/save/${id}`,
+        `/recipe/save/${id}`,
         'POST',
       )
       toast('Info', {

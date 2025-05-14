@@ -8,6 +8,7 @@ const CardRecipeSave = dynamic(
 const CardRecipe = dynamic(() => import('@/components/common/card-recipe'))
 const FormRecipe = dynamic(() => import('@/components/common/form-recipe'))
 const CardProfile = dynamic(() => import('@/components/common/card-profile'))
+const ReplyRecipe = dynamic(() => import('@/components/common/reply-recipe'))
 
 export default function ProfileContainer() {
   const {
@@ -28,6 +29,8 @@ export default function ProfileContainer() {
     setShowEdit,
     valueEdit,
     setValueEdit,
+    openComment,
+    setOpenComment,
   } = Actions()
 
   return (
@@ -54,6 +57,7 @@ export default function ProfileContainer() {
                 }}
                 onPrev={() => handlePagination(page - 1)}
                 onNext={() => handlePagination(page + 1)}
+                onComment={(value) => setOpenComment(value)}
                 onEdit={(id, title, content) => {
                   setShowEdit(id)
                   setValueEdit({
@@ -88,6 +92,13 @@ export default function ProfileContainer() {
         }}
         onFinish={() => mutateRecipe()}
         values={valueEdit}
+      />
+      <ReplyRecipe
+        open={openComment}
+        onOpen={() => {
+          setOpenComment('')
+          handlePagination(page)
+        }}
       />
     </>
   )

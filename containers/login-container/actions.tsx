@@ -24,7 +24,7 @@ export const Actions = () => {
     setLoading(true)
     try {
       const response = await mutateApi<MutateResponse<LoginResponse>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/auth/login`,
+        `/auth/login`,
         'POST',
         values,
       )

@@ -62,9 +62,7 @@ export default function FormRecipe({
     setLoading(true)
     try {
       const response = await mutateApi<MutateResponse<null>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/recipe${
-          isEditing ? `/${open}` : ''
-        }`,
+        `/recipe${isEditing ? `/${open}` : ''}`,
         isEditing ? 'PATCH' : 'POST',
         values,
       )

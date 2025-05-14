@@ -19,10 +19,8 @@ export const Actions = () => {
     like: boolean | null,
   ) => {
     const url = {
-      liked: `${process.env.NEXT_PUBLIC_URL_API}/${
-        like ? 'unlike' : 'like'
-      }/recipe/${id}`,
-      saved: `${process.env.NEXT_PUBLIC_URL_API}/recipe/save/${id}`,
+      liked: `/${like ? 'unlike' : 'like'}/recipe/${id}`,
+      saved: `/recipe/save/${id}`,
     }
     try {
       const response = await mutateApi<MutateResponse<null>>(

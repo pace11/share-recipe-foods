@@ -14,6 +14,14 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Trash2Icon } from 'lucide-react'
 import { Drawer, DrawerTitle, DrawerContent } from '@/components/ui/drawer'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -50,7 +58,7 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
     setLoading(true)
     try {
       const response = await mutateApi<MutateResponse<null>>(
-        `${process.env.NEXT_PUBLIC_URL_API}/comment/recipe/${open}`,
+        `/comment/recipe/${open}`,
         'POST',
         values,
       )
@@ -69,6 +77,27 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const onDelete = async (id: string) => {
+    try {
+      const response = await mutateApi<MutateResponse<null>>(
+        `/comment/${id}`,
+        'DELETE',
+      )
+      toast('Info', {
+        description: response?.message || '',
+        position: 'top-center',
+      })
+      mutate()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong'
+      toast('Error', {
+        description: message,
+        position: 'top-center',
+      })
     }
   }
 
@@ -117,12 +146,40 @@ export default function ReplyRecipe({ open, onOpen }: ReplyRecipeProps) {
             {comments?.data?.map((comment) => (
               <Card key={comment.id}>
                 <CardHeader>
-                  <CardTitle>
-                    {comment.is_mine ? 'Me' : comment.user.name}{' '}
-                    <small>
-                      {' '}
-                      {`(${dateDistanceToNow(comment.created_at)})`}
-                    </small>
+                  <CardTitle className="flex justify-between">
+                    <div>
+                      {comment.is_mine ? 'Me' : comment.user.name}{' '}
+                      <small>
+                        {' '}
+                        {`(${dateDistanceToNow(comment.created_at)})`}
+                      </small>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          hidden={!comment.is_mine}
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogDescription>
+                            Are you sure you want to delete this comment ?
+                          </DialogDescription>
+                          <DialogDescription>
+                            <Button
+                              size="sm"
+                              onClick={() => onDelete(comment.id)}
+                            >
+                              Yes
+                            </Button>
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
                   </CardTitle>
                   <CardDescription>{comment.content}</CardDescription>
                 </CardHeader>

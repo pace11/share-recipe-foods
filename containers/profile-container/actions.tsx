@@ -13,6 +13,7 @@ export const Actions = () => {
   const router = useRouter()
   const [page, setPage] = useState<number>(1)
   const [pageSaves, setPageSaves] = useState<number>(1)
+  const [openComment, setOpenComment] = useState<string>('')
   const [showEdit, setShowEdit] = useState<boolean | string>(false)
   const [valueEdit, setValueEdit] = useState<{
     title: string
@@ -82,6 +83,8 @@ export const Actions = () => {
     mutateRecipe,
     recipeSaveData,
     isLoadingRecipeSave,
+    openComment,
+    setOpenComment,
     mutateRecipeSave,
     handlePagination,
     handlePaginationRecipeSaves,
